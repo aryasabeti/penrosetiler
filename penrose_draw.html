@@ -1,0 +1,150 @@
+<html>
+<head>
+  <script src="processing-1.4.1.js"></script>
+</head>
+
+<p><canvas id="canvas1" style="margin-left:auto;margin-right:auto;display:block;margin-top:50px;" onclick="incUpdate()"></canvas></p>
+
+<script id="script1" type="text/javascript">
+
+//triangle object. 
+//point A must be the tip of the isosceles; B, C must be specified all CW or all CCW - in our case CCW.
+function triangle(isThin, ax, ay, bx, by, cx, cy) {
+	this.isThin = isThin;		//otherwise it is a thick triangle
+	this.ax = ax;
+	this.ay = ay;
+	this.bx = bx;
+	this.by = by;
+	this.cx = cx;
+	this.cy = cy;
+}
+
+tris = new Array();
+// var t = new triangle(true, 0, 0, 200*Math.cos(.628318531), 200*Math.sin(.628318531), 200, 0);
+// tris.push(t);
+
+golden = (1 + Math.sqrt(5)) / 2;
+update = 0;
+maxDivs = 12;
+
+cWidth = 0;
+cHeight = 0;
+
+function incUpdate() {
+	update += 1;
+	maxDivs -= 1;
+}
+
+// Simple way to attach js code to the canvas is by using a function
+function sketchProc(processing) {
+	
+	//set canvas size and call immediately
+	function setup() {
+		cWidth = window.innerWidth-20;
+		cHeight = window.innerHeight*.7;
+		processing.size(cWidth, cHeight);
+    	processing.background(224);	//set background color
+		initTriangles(0);			//draw initial triangles
+	}//end setup()//
+	setup();	
+	
+	
+	//iterates through every current triangle, subdividing each.
+	function subdivideAll() {
+		
+		numTriangles = tris.length;
+		for(var i = 0; i < numTriangles; i++) {
+			var currentTri = tris.splice(0,1)[0];
+		
+			if(currentTri.isThin) {
+				px = currentTri.ax + (currentTri.bx - currentTri.ax) / golden;
+				py = currentTri.ay + (currentTri.by - currentTri.ay) / golden;
+
+				var newTri1 = new triangle(true, currentTri.cx, currentTri.cy, px, py, currentTri.bx, currentTri.by);
+				var newTri2 = new triangle(false, px, py, currentTri.cx, currentTri.cy, currentTri.ax, currentTri.ay);		
+				tris.push(newTri1);
+				tris.push(newTri2);
+				// console.log(newTri1);
+				// console.log(newTri2);
+			}
+			else {
+				qx = currentTri.bx + (currentTri.ax - currentTri.bx) / golden;
+				qy = currentTri.by + (currentTri.ay - currentTri.by) / golden;
+				
+				rx = currentTri.bx + (currentTri.cx - currentTri.bx) / golden;
+				ry = currentTri.by + (currentTri.cy - currentTri.by) / golden;
+				
+				var newTri1 = new triangle(false, qx, qy, rx, ry, currentTri.bx, currentTri.by);
+				var newTri2 = new triangle(true, rx, ry, qx, qy, currentTri.ax, currentTri.ay);
+				var newTri3 = new triangle(false, rx, ry, currentTri.cx, currentTri.cy, currentTri.ax, currentTri.ay);
+				
+				tris.push(newTri1);
+				tris.push(newTri2);
+				tris.push(newTri3);
+				// console.log(newTri1);
+				// console.log(newTri2);
+				// console.log(newTri3);
+			}
+			// console.log(tris);
+		}
+	}//end subdivide()//
+		
+	//paint triangles to canvas
+	function drawTriangles() {
+		processing.noStroke();
+		numTriangles = tris.length;
+		for(var i = 0; i < numTriangles; i++) {
+			var currentTri = tris[i];
+			if(currentTri.isThin) {
+				processing.fill(0, 128, 115);
+				
+			}
+			else {
+				processing.fill(0, 94, 125);
+				
+			}
+			processing.triangle(currentTri.ax, currentTri.ay, currentTri.bx, currentTri.by, currentTri.cx, currentTri.cy);
+		}
+	}//end drawTriangles()
+	
+	function initTriangles(initChoice) {
+		if(initChoice == 0) {
+			var t = new triangle(true, 0, 0, 
+				1.2*cWidth*Math.cos(.628318531), 1.2*cWidth*Math.sin(.628318531), 
+				1.2*cWidth, 0);
+			tris.push(t);
+			
+			t = new triangle(true, 0, 0, 
+				1.2*cWidth*Math.cos(.628318531), 1.2*cWidth*Math.sin(.628318531),
+				1.2*cWidth*Math.cos(1.25663706), 1.2*cWidth*Math.sin(1.25663706));
+			tris.push(t);
+			
+			t = new triangle(true, 0, 0, 
+				1.2*cWidth*Math.cos(1.25663706), 1.2*cWidth*Math.sin(1.25663706),
+				1.2*cWidth*Math.cos(1.88495559), 1.2*cWidth*Math.sin(1.88495559));
+			tris.push(t);
+		}
+	}
+		
+	processing.draw = function() { 	// Override draw function, by default it will be called 60 times per second
+    	// determine center 
+    	var centerX = processing.width / 2, centerY = processing.height / 2;
+		if(update > 0 && maxDivs > 0) {
+			subdivideAll();
+			update = update - 1;
+			console.log("subdivided");
+		}
+		drawTriangles();
+	}//end draw()//
+}
+//end sketchProc()//
+
+
+var canvas = document.getElementById("canvas1");
+// attaching the sketchProc function to the canvas
+var p = new Processing(canvas, sketchProc);
+// p.exit(); to detach it
+</script>
+<body style="margin: 0;padding: 0;">
+</body>
+</html>
