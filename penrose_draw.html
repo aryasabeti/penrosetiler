@@ -20,8 +20,6 @@ function triangle(isThin, ax, ay, bx, by, cx, cy) {
 }
 
 tris = new Array();
-// var t = new triangle(true, 0, 0, 200*Math.cos(.628318531), 200*Math.sin(.628318531), 200, 0);
-// tris.push(t);
 
 golden = (1 + Math.sqrt(5)) / 2;
 update = 0;
@@ -29,6 +27,8 @@ maxDivs = 12;
 
 cWidth = 0;
 cHeight = 0;
+centerX = 0;
+centerY = 0;
 
 function incUpdate() {
 	update += 1;
@@ -43,7 +43,10 @@ function sketchProc(processing) {
 		cWidth = window.innerWidth-20;
 		cHeight = window.innerHeight*.7;
 		processing.size(cWidth, cHeight);
-    	processing.background(224);	//set background color
+    	processing.background(240);	//set background color
+		centerX = processing.width / 2;
+		centerY = processing.height / 2;
+		processing.translate(0, centerY);
 		initTriangles(0);			//draw initial triangles
 	}//end setup()//
 	setup();	
@@ -51,11 +54,18 @@ function sketchProc(processing) {
 	
 	//iterates through every current triangle, subdividing each.
 	function subdivideAll() {
-		
+		mFactor = 1.25;
 		numTriangles = tris.length;
 		for(var i = 0; i < numTriangles; i++) {
 			var currentTri = tris.splice(0,1)[0];
-		
+			
+			currentTri.ax *= mFactor;
+			currentTri.ay *= mFactor;
+			currentTri.bx *= mFactor;
+			currentTri.by *= mFactor;
+			currentTri.cx *= mFactor;
+			currentTri.cy *= mFactor;
+			
 			if(currentTri.isThin) {
 				px = currentTri.ax + (currentTri.bx - currentTri.ax) / golden;
 				py = currentTri.ay + (currentTri.by - currentTri.ay) / golden;
@@ -107,28 +117,43 @@ function sketchProc(processing) {
 		}
 	}//end drawTriangles()
 	
+	//first triangles
 	function initTriangles(initChoice) {
+		var c = 200;
+		var legLength = centerY/2;
+		
 		if(initChoice == 0) {
 			var t = new triangle(true, 0, 0, 
-				1.2*cWidth*Math.cos(.628318531), 1.2*cWidth*Math.sin(.628318531), 
-				1.2*cWidth, 0);
+				c*Math.cos(-1.25663706), c*Math.sin(-1.25663706),
+				c*Math.cos(-1.88495559), c*Math.sin(-1.88495559));
+			tris.push(t);
+			t = new triangle(true, 0, 0, 
+				c*Math.cos(-.628318531), c*Math.sin(-.628318531),
+				c*Math.cos(-1.25663706), c*Math.sin(-1.25663706));
+			tris.push(t);
+			
+			t = new triangle(true, 0, 0,
+				c*Math.cos(-.628318531), c*Math.sin(-.628318531),
+				c, 0);
+			tris.push(t);
+			t = new triangle(true, 0, 0, 
+				c*Math.cos(.628318531), c*Math.sin(.628318531), 
+				c, 0);
+			tris.push(t);
+			t = new triangle(true, 0, 0, 
+				c*Math.cos(.628318531), c*Math.sin(.628318531),
+				c*Math.cos(1.25663706), c*Math.sin(1.25663706));
 			tris.push(t);
 			
 			t = new triangle(true, 0, 0, 
-				1.2*cWidth*Math.cos(.628318531), 1.2*cWidth*Math.sin(.628318531),
-				1.2*cWidth*Math.cos(1.25663706), 1.2*cWidth*Math.sin(1.25663706));
-			tris.push(t);
-			
-			t = new triangle(true, 0, 0, 
-				1.2*cWidth*Math.cos(1.25663706), 1.2*cWidth*Math.sin(1.25663706),
-				1.2*cWidth*Math.cos(1.88495559), 1.2*cWidth*Math.sin(1.88495559));
+				c*Math.cos(1.25663706), c*Math.sin(1.25663706),
+				c*Math.cos(1.88495559), c*Math.sin(1.88495559));
 			tris.push(t);
 		}
-	}
+	}//end initTriangles()//
 		
 	processing.draw = function() { 	// Override draw function, by default it will be called 60 times per second
     	// determine center 
-    	var centerX = processing.width / 2, centerY = processing.height / 2;
 		if(update > 0 && maxDivs > 0) {
 			subdivideAll();
 			update = update - 1;
