@@ -2,8 +2,21 @@
 <head>
   <script src="processing-1.4.1.js"></script>
 </head>
+<style>
 
-<p><canvas id="canvas1" style="margin-left:auto;margin-right:auto;display:block;margin-top:50px;" onclick="incUpdate()"></canvas></p>
+canvas {
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+        outline: none;
+        -webkit-tap-highlight-color: rgba(255, 255, 255, 0); /* mobile webkit */
+}
+
+</style>
+<canvas id="canvas1" style="margin-left:auto;margin-right:auto;display:block;" onclick="incUpdate()"></canvas>
 
 <script id="script1" type="text/javascript">
 
@@ -23,7 +36,7 @@ tris = new Array();
 
 golden = (1 + Math.sqrt(5)) / 2;
 update = 0;
-maxDivs = 12;
+maxDivs = 11;
 
 cWidth = 0;
 cHeight = 0;
@@ -40,13 +53,16 @@ function sketchProc(processing) {
 	
 	//set canvas size and call immediately
 	function setup() {
-		cWidth = window.innerWidth-20;
-		cHeight = window.innerHeight*.7;
+		//magic numbers avoid causing scroll bars
+		// cWidth = window.innerWidth-20;
+		// cHeight = window.innerHeight*.85;
+		cWidth = window.innerWidth;
+		cHeight = window.innerHeight;
 		processing.size(cWidth, cHeight);
-    	processing.background(240);	//set background color
+    	processing.background(240);
 		centerX = processing.width / 2;
 		centerY = processing.height / 2;
-		processing.translate(0, centerY);
+		processing.translate(centerX, centerY);
 		initTriangles(0);			//draw initial triangles
 	}//end setup()//
 	setup();	
@@ -54,7 +70,7 @@ function sketchProc(processing) {
 	
 	//iterates through every current triangle, subdividing each.
 	function subdivideAll() {
-		mFactor = 1.25;
+		mFactor = 1.1;
 		numTriangles = tris.length;
 		for(var i = 0; i < numTriangles; i++) {
 			var currentTri = tris.splice(0,1)[0];
@@ -120,40 +136,72 @@ function sketchProc(processing) {
 	//first triangles
 	function initTriangles(initChoice) {
 		var c = 200;
-		var legLength = centerY/2;
+		c = centerY;
 		
 		if(initChoice == 0) {
-			var t = new triangle(true, 0, 0, 
-				c*Math.cos(-1.25663706), c*Math.sin(-1.25663706),
-				c*Math.cos(-1.88495559), c*Math.sin(-1.88495559));
+			var t = new triangle(
+				true, 0, 0, 
+				c*Math.cos(-1.88495559), c*Math.sin(-1.88495559),
+				c*Math.cos(-1.25663706), c*Math.sin(-1.25663706));
 			tris.push(t);
-			t = new triangle(true, 0, 0, 
+			t = new triangle(
+				true, 0, 0, 
 				c*Math.cos(-.628318531), c*Math.sin(-.628318531),
 				c*Math.cos(-1.25663706), c*Math.sin(-1.25663706));
 			tris.push(t);
-			
-			t = new triangle(true, 0, 0,
+			t = new triangle(
+				true, 0, 0,
 				c*Math.cos(-.628318531), c*Math.sin(-.628318531),
 				c, 0);
 			tris.push(t);
-			t = new triangle(true, 0, 0, 
+			t = new triangle(
+				true, 0, 0, 
 				c*Math.cos(.628318531), c*Math.sin(.628318531), 
 				c, 0);
 			tris.push(t);
-			t = new triangle(true, 0, 0, 
+			t = new triangle(
+				true, 0, 0, 
 				c*Math.cos(.628318531), c*Math.sin(.628318531),
 				c*Math.cos(1.25663706), c*Math.sin(1.25663706));
 			tris.push(t);
-			
-			t = new triangle(true, 0, 0, 
-				c*Math.cos(1.25663706), c*Math.sin(1.25663706),
-				c*Math.cos(1.88495559), c*Math.sin(1.88495559));
+			t = new triangle(
+				true, 0, 0, 
+				c*Math.cos(1.88495559), c*Math.sin(1.88495559),
+				c*Math.cos(1.25663706), c*Math.sin(1.25663706));
+			tris.push(t);
+			t = new triangle(
+				true, 0, 0, 
+				-c*Math.cos(1.25663706), c*Math.sin(1.25663706),
+				-c*Math.cos(.628318531), c*Math.sin(.628318531));
+			tris.push(t);
+			t = new triangle(
+				true, 0, 0, 
+				-c, 0,
+				-c*Math.cos(.628318531), c*Math.sin(.628318531));
+			tris.push(t);
+			t = new triangle(
+				true, 0, 0,
+				-c, 0,
+				-c*Math.cos(-.628318531), c*Math.sin(-.628318531));
+			tris.push(t);
+			t = new triangle(
+				true, 0, 0, 
+				-c*Math.cos(-1.25663706), c*Math.sin(-1.25663706),
+				-c*Math.cos(-.628318531), c*Math.sin(-.628318531));
 			tris.push(t);
 		}
 	}//end initTriangles()//
 		
 	processing.draw = function() { 	// Override draw function, by default it will be called 60 times per second
     	// determine center 
+    	
+		// cWidth = window.innerWidth;
+		// cHeight = window.innerHeight;
+		// processing.size(cWidth, cHeight);
+  //   	// processing.background(240);
+		// centerX = processing.width / 2;
+		// centerY = processing.height / 2;
+
 		if(update > 0 && maxDivs > 0) {
 			subdivideAll();
 			update = update - 1;
