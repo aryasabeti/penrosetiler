@@ -1,25 +1,3 @@
-<html>
-<head>
-  <script src="processing-1.4.1.js"></script>
-</head>
-<style>
-
-canvas {
-        -webkit-touch-callout: none;
-        -webkit-user-select: none;
-        -khtml-user-select: none;
-        -moz-user-select: none;
-        -ms-user-select: none;
-        user-select: none;
-        outline: none;
-        -webkit-tap-highlight-color: rgba(255, 255, 255, 0); /* mobile webkit */
-}
-
-</style>
-<canvas id="canvas1" style="margin-left:auto;margin-right:auto;display:block;" onclick="incUpdate()"></canvas>
-
-<script id="script1" type="text/javascript">
-
 //triangle object. 
 //point A must be the tip of the isosceles; B, C must be specified all CW or all CCW - in our case CCW.
 function triangle(isThin, ax, ay, bx, by, cx, cy) {
@@ -53,11 +31,8 @@ function sketchProc(processing) {
 	
 	//set canvas size and call immediately
 	function setup() {
-		//magic numbers avoid causing scroll bars
-		// cWidth = window.innerWidth-20;
-		// cHeight = window.innerHeight*.85;
-		cWidth = window.innerWidth;
-		cHeight = window.innerHeight;
+		cWidth = window.innerWidth * .8;
+		cHeight = window.innerHeight * .8;
 		processing.size(cWidth, cHeight);
     	processing.background(240);
 		centerX = processing.width / 2;
@@ -107,9 +82,6 @@ function sketchProc(processing) {
 				tris.push(newTri1);
 				tris.push(newTri2);
 				tris.push(newTri3);
-				// console.log(newTri1);
-				// console.log(newTri2);
-				// console.log(newTri3);
 			}
 			// console.log(tris);
 		}
@@ -198,7 +170,7 @@ function sketchProc(processing) {
 		// cWidth = window.innerWidth;
 		// cHeight = window.innerHeight;
 		// processing.size(cWidth, cHeight);
-  //   	// processing.background(240);
+	   	// processing.background(240);
 		// centerX = processing.width / 2;
 		// centerY = processing.height / 2;
 
@@ -207,6 +179,7 @@ function sketchProc(processing) {
 			update = update - 1;
 			console.log("subdivided");
 		}
+
 		drawTriangles();
 	}//end draw()//
 }
@@ -217,7 +190,3 @@ var canvas = document.getElementById("canvas1");
 // attaching the sketchProc function to the canvas
 var p = new Processing(canvas, sketchProc);
 // p.exit(); to detach it
-</script>
-<body style="margin: 0;padding: 0;">
-</body>
-</html>
