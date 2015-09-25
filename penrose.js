@@ -1,192 +1,150 @@
-//triangle object. 
-//point A must be the tip of the isosceles; B, C must be specified all CW or all CCW - in our case CCW.
-function triangle(isThin, ax, ay, bx, by, cx, cy) {
-	this.isThin = isThin;		//otherwise it is a thick triangle
-	this.ax = ax;
-	this.ay = ay;
-	this.bx = bx;
-	this.by = by;
-	this.cx = cx;
-	this.cy = cy;
-}
-
-tris = new Array();
-
-golden = (1 + Math.sqrt(5)) / 2;
-update = 0;
-maxDivs = 11;
-
-cWidth = 0;
-cHeight = 0;
-centerX = 0;
-centerY = 0;
-
-function incUpdate() {
-	update += 1;
-	maxDivs -= 1;
-}
-
 // Simple way to attach js code to the canvas is by using a function
 function sketchProc(processing) {
-	
-	//set canvas size and call immediately
-	function setup() {
-		cWidth = window.innerWidth * .8;
-		cHeight = window.innerHeight * .8;
-		processing.size(cWidth, cHeight);
-    	processing.background(240);
-		centerX = processing.width / 2;
-		centerY = processing.height / 2;
-		processing.translate(centerX, centerY);
-		initTriangles(0);			//draw initial triangles
-	}//end setup()//
-	setup();	
-	
-	
-	//iterates through every current triangle, subdividing each.
-	function subdivideAll() {
-		mFactor = 1.1;
-		numTriangles = tris.length;
-		for(var i = 0; i < numTriangles; i++) {
-			var currentTri = tris.splice(0,1)[0];
-			
-			currentTri.ax *= mFactor;
-			currentTri.ay *= mFactor;
-			currentTri.bx *= mFactor;
-			currentTri.by *= mFactor;
-			currentTri.cx *= mFactor;
-			currentTri.cy *= mFactor;
-			
-			if(currentTri.isThin) {
-				px = currentTri.ax + (currentTri.bx - currentTri.ax) / golden;
-				py = currentTri.ay + (currentTri.by - currentTri.ay) / golden;
+	allTris = new Array();
+	golden = (1 + Math.sqrt(5)) / 2;
+	stroke = true;
 
-				var newTri1 = new triangle(true, currentTri.cx, currentTri.cy, px, py, currentTri.bx, currentTri.by);
-				var newTri2 = new triangle(false, px, py, currentTri.cx, currentTri.cy, currentTri.ax, currentTri.ay);		
-				tris.push(newTri1);
-				tris.push(newTri2);
-				// console.log(newTri1);
-				// console.log(newTri2);
-			}
-			else {
-				qx = currentTri.bx + (currentTri.ax - currentTri.bx) / golden;
-				qy = currentTri.by + (currentTri.ay - currentTri.by) / golden;
-				
-				rx = currentTri.bx + (currentTri.cx - currentTri.bx) / golden;
-				ry = currentTri.by + (currentTri.cy - currentTri.by) / golden;
-				
-				var newTri1 = new triangle(false, qx, qy, rx, ry, currentTri.bx, currentTri.by);
-				var newTri2 = new triangle(true, rx, ry, qx, qy, currentTri.ax, currentTri.ay);
-				var newTri3 = new triangle(false, rx, ry, currentTri.cx, currentTri.cy, currentTri.ax, currentTri.ay);
-				
-				tris.push(newTri1);
-				tris.push(newTri2);
-				tris.push(newTri3);
-			}
-			// console.log(tris);
+	// all triples must be specified CCW.
+	function triangle(isThin, ax, ay, bx, by, cx, cy) {
+		this.isThin = isThin;		//otherwise it is a thick triangle
+		this.ax = ax;
+		this.ay = ay;
+		this.bx = bx;
+		this.by = by;
+		this.cx = cx;
+		this.cy = cy;
+	}
+
+	// for the purpose of penrose tiles:
+	// the unique angle is always 36 degrees.
+	// the tip always sits at the origin
+	function isoscelesTriangle(degRotation, scale, flip) {
+		if(flip) {
+			var flipAngle = 36
+			var noFlipAngle = 0
 		}
-	}//end subdivide()//
-		
-	//paint triangles to canvas
-	function drawTriangles() {
-		processing.noStroke();
-		numTriangles = tris.length;
-		for(var i = 0; i < numTriangles; i++) {
+		else {
+			var flipAngle = 0
+			var noFlipAngle = 36
+		}
+
+		return new triangle(
+			true,
+			0,
+			0,
+			scale * Math.cos(processing.radians(degRotation + flipAngle)),
+			scale * Math.sin(processing.radians(degRotation + flipAngle)),
+			scale * Math.cos(processing.radians(degRotation + noFlipAngle)),
+			scale * Math.sin(processing.radians(degRotation + noFlipAngle)))
+	}
+
+	function subdivideOne(tri) {
+		if(tri.isThin) {
+			var px = tri.ax + (tri.bx - tri.ax) / golden;
+			var py = tri.ay + (tri.by - tri.ay) / golden;
+
+			return([
+				new triangle(true, tri.cx, tri.cy, px, py, tri.bx, tri.by),
+				new triangle(false, px, py, tri.cx, tri.cy, tri.ax, tri.ay)
+			])
+		}
+
+		else {
+			var qx = tri.bx + (tri.ax - tri.bx) / golden;
+			var qy = tri.by + (tri.ay - tri.by) / golden;
+			var rx = tri.bx + (tri.cx - tri.bx) / golden;
+			var ry = tri.by + (tri.cy - tri.by) / golden;
+
+			return([
+				new triangle(false, qx, qy, rx, ry, tri.bx, tri.by),
+				new triangle(true, rx, ry, qx, qy, tri.ax, tri.ay),
+				new triangle(false, rx, ry, tri.cx, tri.cy, tri.ax, tri.ay)
+			])
+		}
+	}
+
+	function subdivideAll(tris) {
+		var newTris = Array()
+
+		for(var i = 0; i < tris.length; i++) {
+			var divisions = subdivideOne(tris[i])
+
+			for(var j = 0; j < divisions.length; j++)
+				newTris.push(divisions[j])
+		}
+
+		return newTris
+	}
+
+	function initTriangles() {
+		var tris = Array()
+		for(var i = 0; i < 5; i++)
+			tris.push(new isoscelesTriangle(72 * i, cHeight/2, false))
+
+		for(var i = 0; i < 5; i++)
+			tris.push(new isoscelesTriangle(36 + 72 * i, cHeight/2, true))
+
+		return tris
+	}
+
+	function init(iterations) {
+		// precompute all tilings
+		allTris.push(initTriangles())
+		for(var i = 1; i < iterations; i++) {
+			allTris.push(subdivideAll(allTris[i-1]))
+		}
+	}
+
+	processing.draw = function() {
+		var numIterations = allTris.length
+		var interval = window.innerHeight / numIterations
+		var whichInterval
+
+		for(var i = 1; i < numIterations + 1; i++) {
+			if(processing.mouseY - i * interval < 0) {
+				whichInterval = i - 1
+				break
+			}
+		}
+
+		tris = allTris[whichInterval]
+
+		for(var i = 0; i < tris.length; i++) {
 			var currentTri = tris[i];
 			if(currentTri.isThin) {
 				processing.fill(0, 128, 115);
-				
 			}
 			else {
 				processing.fill(0, 94, 125);
-				
 			}
 			processing.triangle(currentTri.ax, currentTri.ay, currentTri.bx, currentTri.by, currentTri.cx, currentTri.cy);
 		}
-	}//end drawTriangles()
-	
-	//first triangles
-	function initTriangles(initChoice) {
-		var c = 200;
-		c = centerY;
-		
-		if(initChoice == 0) {
-			var t = new triangle(
-				true, 0, 0, 
-				c*Math.cos(-1.88495559), c*Math.sin(-1.88495559),
-				c*Math.cos(-1.25663706), c*Math.sin(-1.25663706));
-			tris.push(t);
-			t = new triangle(
-				true, 0, 0, 
-				c*Math.cos(-.628318531), c*Math.sin(-.628318531),
-				c*Math.cos(-1.25663706), c*Math.sin(-1.25663706));
-			tris.push(t);
-			t = new triangle(
-				true, 0, 0,
-				c*Math.cos(-.628318531), c*Math.sin(-.628318531),
-				c, 0);
-			tris.push(t);
-			t = new triangle(
-				true, 0, 0, 
-				c*Math.cos(.628318531), c*Math.sin(.628318531), 
-				c, 0);
-			tris.push(t);
-			t = new triangle(
-				true, 0, 0, 
-				c*Math.cos(.628318531), c*Math.sin(.628318531),
-				c*Math.cos(1.25663706), c*Math.sin(1.25663706));
-			tris.push(t);
-			t = new triangle(
-				true, 0, 0, 
-				c*Math.cos(1.88495559), c*Math.sin(1.88495559),
-				c*Math.cos(1.25663706), c*Math.sin(1.25663706));
-			tris.push(t);
-			t = new triangle(
-				true, 0, 0, 
-				-c*Math.cos(1.25663706), c*Math.sin(1.25663706),
-				-c*Math.cos(.628318531), c*Math.sin(.628318531));
-			tris.push(t);
-			t = new triangle(
-				true, 0, 0, 
-				-c, 0,
-				-c*Math.cos(.628318531), c*Math.sin(.628318531));
-			tris.push(t);
-			t = new triangle(
-				true, 0, 0,
-				-c, 0,
-				-c*Math.cos(-.628318531), c*Math.sin(-.628318531));
-			tris.push(t);
-			t = new triangle(
-				true, 0, 0, 
-				-c*Math.cos(-1.25663706), c*Math.sin(-1.25663706),
-				-c*Math.cos(-.628318531), c*Math.sin(-.628318531));
-			tris.push(t);
-		}
-	}//end initTriangles()//
-		
-	processing.draw = function() { 	// Override draw function, by default it will be called 60 times per second
-    	// determine center 
-    	
-		// cWidth = window.innerWidth;
-		// cHeight = window.innerHeight;
-		// processing.size(cWidth, cHeight);
-	   	// processing.background(240);
-		// centerX = processing.width / 2;
-		// centerY = processing.height / 2;
+	}
 
-		if(update > 0 && maxDivs > 0) {
-			subdivideAll();
-			update = update - 1;
-			console.log("subdivided");
-		}
+	processing.mouseClicked = function () {
+		if(stroke)
+			processing.stroke(0)
+		else
+			processing.noStroke()
+		stroke = !stroke
+	}
 
-		drawTriangles();
-	}//end draw()//
+	//set canvas size and call immediately
+	function setup() {
+		cWidth = window.innerWidth;
+		cHeight = window.innerHeight;
+		processing.size(cWidth, cHeight);
+		processing.background(40);
+		processing.noStroke();
+		centerX = processing.width / 2;
+		centerY = processing.height / 2;
+		processing.translate(centerX, centerY);
+		init(7);
+	}
+
+	setup();
 }
-//end sketchProc()//
-
 
 var canvas = document.getElementById("canvas1");
 // attaching the sketchProc function to the canvas
 var p = new Processing(canvas, sketchProc);
-// p.exit(); to detach it
