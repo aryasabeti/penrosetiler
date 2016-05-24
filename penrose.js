@@ -92,6 +92,7 @@ function sketchProc(processing) {
 		allTris.push(initTriangles())
 		for(var i = 1; i < iterations; i++) {
 			allTris.push(subdivideAll(allTris[i-1]))
+			processing.save('a.tif')
 		}
 	}
 

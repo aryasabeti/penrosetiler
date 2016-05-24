@@ -1,0 +1,74 @@
+body {
+	background-color: rgb(40,40,40);
+}
+
+html, body, div, canvas {
+	margin: 0;
+	padding: 0;
+	font-family: 'Open Sans', sans-serif;
+	font-size: 1.1em;
+}
+
+h1, h2, h3, h4, h5, h6 {
+	font-family: 'Open Sans', sans-serif;
+	text-align: center;
+	color: rgb(240, 240, 240);
+}
+
+a, p {
+	color: rgb(240, 240, 240);
+}
+
+#index-content {
+	width: 30%;
+	text-align: center;
+	margin: 0 auto;
+}
+
+#index-content div {
+	margin: 15% auto;
+}
+
+#index-content img {
+	width: 100%;
+	max-width: 150px;
+}
+
+#index-content a {
+	text-decoration: none;
+}
+
+#content {
+	width: 60%;
+	margin: 0 auto;
+}
+
+#content div {
+	margin: 15% auto;
+}
+
+#content img {
+	margin: 20px auto;
+}
+
+canvas {
+	width: 100%;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	outline: none;
+	-webkit-tap-highlight-color: rgba(255, 255, 255, 0); /* mobile webkit */
+}
+
+.yo {
+	font: Montserrat;
+	font-weight: bold;
+	background-color: #833ca3;
+}
+
+.yo h1 {
+	font-size: 64px;
+}
